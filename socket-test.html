@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task API Socket.IO Test</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .status {
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .status.connected {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <h1>Task API Socket.IO Test Client</h1>
+    
+    <div class="form-group">
+        <label for="token">JWT Token:</label>
+        <input type="text" id="token" placeholder="Enter your JWT token">
+    </div>
+    
+    <div class="form-group">
+        <label for="userId">User ID (for testing without token):</label>
+        <input type="number" id="userId" value="1" placeholder="Enter user ID">
+    </div>
+    
+    <button onclick="connect()">Connect</button>
+    <button onclick="disconnect()">Disconnect</button>
+    
+    <div id="status" class="status disconnected">Disconnected</div>
+    
+    <div class="container">
+        <div>
+            <h3>Create Task</h3>
+            <div class="form-group">
+                <label for="title">Title:</label>
+                <input type="text" id="title" placeholder="Task title">
+            </div>
+            <div class="form-group">
+                <label for="description">Description:</label>
+                <textarea id="description" placeholder="Task description"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="status">Status:</label>
+                <select id="status">
+                    <option value="pending">Pending</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="completed">Completed</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="priority">Priority:</label>
+                <select id="priority">
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="dueDate">Due Date:</label>
+                <input type="date" id="dueDate">
+            </div>
+            <button onclick="createTask()">Create Task</button>
+        </div>
+        
+        <div>
+            <h3>Task Operations</h3>
+            <div class="form-group">
+                <label for="taskId">Task ID:</label>
+                <input type="number" id="taskId" placeholder="Task ID">
+            </div>
+            <button onclick="findAllTasks()">Get All Tasks</button>
+            <button onclick="findOneTask()">Get Task</button>
+            <button onclick="updateTask()">Update Task</button>
+            <button onclick="removeTask()">Remove Task</button>
+            <button onclick="joinTaskRoom()">Join Task Room</button>
+            <button onclick="leaveTaskRoom()">Leave Task Room</button>
+        </div>
+    </div>
+    
+    <h3>Event Log</h3>
+    <div id="log" class="log"></div>
+
+    <script>
+        let socket = null;
+        
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        function updateStatus(connected) {
+            const statusDiv = document.getElementById('status');
+            if (connected) {
+                console.log('connect')
+                statusDiv.className = 'status connected';
+                statusDiv.textContent = 'Connected';
+            } else {
+                statusDiv.className = 'status disconnected';
+                statusDiv.textContent = 'Disconnected';
+            }
+        }
+        
+        function connect() {
+            const token = document.getElementById('token').value;
+            const userId = document.getElementById('userId').value;
+            
+            if (!token && !userId) {
+                alert('Please provide either a JWT token or user ID');
+                return;
+            }
+            
+            const options = {
+                namespace: '/tasks'
+            };
+            
+            if (token) {
+                options.auth = { token };
+            } else {
+                options.query = { userId };
+            }
+            
+            socket = io('http://localhost:7777', options);
+            
+            socket.on('connect', () => {
+                log('Connected to server');
+                updateStatus(true);
+            });
+            
+            socket.on('disconnect', () => {
+                log('Disconnected from server');
+                updateStatus(false);
+            });
+            
+            socket.on('connected', (data) => {
+                log(`Connected: ${JSON.stringify(data)}`);
+            });
+            
+            socket.on('taskCreated', (data) => {
+                log(`Task created: ${JSON.stringify(data)}`);
+            });
+            
+            socket.on('tasksFound', (data) => {
+                log(`Tasks found: ${JSON.stringify(data)}`);
+            });
+            
+            socket.on('taskFound', (data) => {
+                log(`Task found: ${JSON.stringify(data)}`);
+            });
+            
+            socket.on('taskUpdated', (data) => {
+                log(`Task updated: ${JSON.stringify(data)}`);
+            });
+            
+            socket.on('taskRemoved', (data) => {
+                log(`Task removed: ${JSON.stringify(data)}`);
+            });
+            
+            socket.on('joinedTaskRoom', (data) => {
+                log(`Joined task room: ${JSON.stringify(data)}`);
+            });
+            
+            socket.on('leftTaskRoom', (data) => {
+                log(`Left task room: ${JSON.stringify(data)}`);
+            });
+            
+            socket.on('error', (data) => {
+                log(`Error: ${JSON.stringify(data)}`);
+            });
+        }
+        
+        function disconnect() {
+            if (socket) {
+                socket.disconnect();
+                socket = null;
+            }
+        }
+        
+        function createTask() {
+            if (!socket) {
+                alert('Please connect first');
+                return;
+            }
+            
+            const taskData = {
+                title: document.getElementById('title').value,
+                description: document.getElementById('description').value,
+                status: document.getElementById('status').value,
+                priority: document.getElementById('priority').value,
+                dueDate: document.getElementById('dueDate').value || null
+            };
+            
+            socket.emit('createTask', taskData);
+            log(`Emitting createTask: ${JSON.stringify(taskData)}`);
+        }
+        
+        function findAllTasks() {
+            if (!socket) {
+                alert('Please connect first');
+                return;
+            }
+            
+            socket.emit('findAllTasks');
+            log('Emitting findAllTasks');
+        }
+        
+        function findOneTask() {
+            if (!socket) {
+                alert('Please connect first');
+                return;
+            }
+            
+            const taskId = parseInt(document.getElementById('taskId').value);
+            if (!taskId) {
+                alert('Please enter a task ID');
+                return;
+            }
+            
+            socket.emit('findOneTask', taskId);
+            log(`Emitting findOneTask: ${taskId}`);
+        }
+        
+        function updateTask() {
+            if (!socket) {
+                alert('Please connect first');
+                return;
+            }
+            
+            const taskId = parseInt(document.getElementById('taskId').value);
+            if (!taskId) {
+                alert('Please enter a task ID');
+                return;
+            }
+            
+            const taskData = {
+                id: taskId,
+                title: document.getElementById('title').value,
+                description: document.getElementById('description').value,
+                status: document.getElementById('status').value,
+                priority: document.getElementById('priority').value,
+                dueDate: document.getElementById('dueDate').value || null
+            };
+            
+            socket.emit('updateTask', taskData);
+            log(`Emitting updateTask: ${JSON.stringify(taskData)}`);
+        }
+        
+        function removeTask() {
+            if (!socket) {
+                alert('Please connect first');
+                return;
+            }
+            
+            const taskId = parseInt(document.getElementById('taskId').value);
+            if (!taskId) {
+                alert('Please enter a task ID');
+                return;
+            }
+            
+            socket.emit('removeTask', taskId);
+            log(`Emitting removeTask: ${taskId}`);
+        }
+        
+        function joinTaskRoom() {
+            if (!socket) {
+                alert('Please connect first');
+                return;
+            }
+            
+            const taskId = parseInt(document.getElementById('taskId').value);
+            if (!taskId) {
+                alert('Please enter a task ID');
+                return;
+            }
+            
+            socket.emit('joinTaskRoom', taskId);
+            log(`Emitting joinTaskRoom: ${taskId}`);
+        }
+        
+        function leaveTaskRoom() {
+            if (!socket) {
+                alert('Please connect first');
+                return;
+            }
+            
+            const taskId = parseInt(document.getElementById('taskId').value);
+            if (!taskId) {
+                alert('Please enter a task ID');
+                return;
+            }
+            
+            socket.emit('leaveTaskRoom', taskId);
+            log(`Emitting leaveTaskRoom: ${taskId}`);
+        }
+    </script>
+</body>
+</html>

@@ -7,6 +7,7 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { WsAuthService } from './services/ws-auth.service';
 
 @Module({
   imports: [
@@ -24,7 +25,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JwtStrategy],
-  exports: [AuthService],
+  providers: [AuthService, LocalStrategy, JwtStrategy, WsAuthService],
+  exports: [AuthService, WsAuthService],
 })
 export class UsersModule {}
