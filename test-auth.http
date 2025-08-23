@@ -1,0 +1,58 @@
+### Test Authentication System
+
+# 1. Register a new user
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "password": "password123",
+  "email": "test@example.com",
+  "firstName": "Test",
+  "lastName": "User"
+}
+
+###
+
+# 2. Login with the user
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "password": "password123"
+}
+
+###
+
+# 3. Get user profile (requires JWT token)
+# Replace <JWT_TOKEN> with the access_token from the login response
+GET http://localhost:3000/auth/profile
+Authorization: Bearer <JWT_TOKEN>
+
+###
+
+# 4. Access protected task routes (requires JWT token)
+# Replace <JWT_TOKEN> with the access_token from the login response
+GET http://localhost:3000/tasks
+Authorization: Bearer <JWT_TOKEN>
+
+###
+
+# 5. Create a task (requires JWT token)
+# Replace <JWT_TOKEN> with the access_token from the login response
+POST http://localhost:3000/tasks
+Authorization: Bearer <JWT_TOKEN>
+Content-Type: application/json
+
+{
+  "title": "Test Task",
+  "description": "This is a test task"
+}
+
+###
+
+# 6. Get user's tasks (requires JWT token)
+# Replace <JWT_TOKEN> with the access_token from the login response
+GET http://localhost:3000/tasks/my-tasks
+Authorization: Bearer <JWT_TOKEN>

@@ -14,4 +14,4 @@ import configuration from './configuration';
   providers: [AppConfigService],
   exports: [AppConfigService],
 })
-export class ConfigModule {} 
+export class ConfigModule {}

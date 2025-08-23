@@ -1,3 +1,5 @@
+# ProSign API
+
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
 </p>
@@ -14,22 +16,63 @@
 <a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
 <a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
 <a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
+  <a href="https://paypal.me/kamilmysliwiec" target="blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
     <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
   <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
 </p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository with **authentication system** using Passport + JWT.
+
+## Features
+
+- 🔐 **Authentication System**: Complete JWT-based authentication with Passport
+- 👤 **User Management**: User registration, login, and profile management
+- 🛡️ **Route Protection**: JWT guards for protecting API endpoints
+- 🔒 **Security**: Password hashing with bcrypt, input validation
+- 📊 **Database**: TypeORM integration with PostgreSQL
+- ⚡ **Real-time**: WebSocket support for real-time features
+- 🎯 **Task Management**: Basic task CRUD operations
+
+## Authentication System
+
+The API includes a complete authentication system with the following endpoints:
+
+- `POST /auth/register` - User registration
+- `POST /auth/login` - User login (returns JWT token)
+- `GET /auth/profile` - Get user profile (protected)
+- `GET /tasks` - Get all tasks (protected)
+- `POST /tasks` - Create new task (protected)
+
+### Protected Routes
+
+Routes can be protected using the `@UseGuards(JwtAuthGuard)` decorator:
+
+```typescript
+@UseGuards(JwtAuthGuard)
+@Get('protected')
+getProtectedData() {
+  return 'This is protected data';
+}
+```
 
 ## Project setup
 
 ```bash
 $ npm install
 ```
+
+## Environment Configuration
+
+Create a `.env` file based on `config.example.md` with your database and JWT settings.
+
+## Database Setup
+
+1. Install PostgreSQL
+2. Create a database named `prosign`
+3. Update your `.env` file with database credentials
+4. Set `DATABASE_SYNCHRONIZE=true` for development
 
 ## Compile and run the project
 
@@ -44,6 +87,14 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
+## Testing the Authentication
+
+Use the `test-auth.http` file to test the authentication endpoints, or use tools like Postman:
+
+1. Register a user: `POST /auth/register`
+2. Login: `POST /auth/login` (get JWT token)
+3. Use the token in `Authorization: Bearer <token>` header for protected routes
+
 ## Run tests
 
 ```bash
@@ -56,6 +107,12 @@ $ npm run test:e2e
 # test coverage
 $ npm run test:cov
 ```
+
+## API Documentation
+
+- **Authentication**: See `src/users/README.md`
+- **Task Management**: See `src/task/` directory
+- **Configuration**: See `src/config/` directory
 
 ## Deployment
 

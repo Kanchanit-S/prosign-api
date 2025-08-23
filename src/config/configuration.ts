@@ -10,13 +10,7 @@ export default () => ({
 
   // Database configuration
   database: {
-    host: process.env.DATABASE_HOST || 'localhost',
-    port: parseInt(process.env.DATABASE_PORT || '5432', 10) || 5432,
-    username: process.env.DATABASE_USERNAME || 'postgres',
-    password: process.env.DATABASE_PASSWORD || 'password',
-    database: process.env.DATABASE_NAME || 'prosign',
-    synchronize: process.env.DATABASE_SYNCHRONIZE === 'true' || false,
-    logging: process.env.DATABASE_LOGGING === 'true' || false,
+    url: process.env.DATABASE_URL || `postgresql://${process.env.DATABASE_USERNAME || 'postgres'}:${process.env.DATABASE_PASSWORD || 'password'}@${process.env.DATABASE_HOST || 'localhost'}:${process.env.DATABASE_PORT || '5432'}/${process.env.DATABASE_NAME || 'prosign'}`,
   },
 
   // JWT configuration
