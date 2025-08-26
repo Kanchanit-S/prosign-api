@@ -18,6 +18,8 @@ export class TaskService {
       userId,
     };
 
+    console.log('taskData', taskData)
+
     return this.prisma.task.create({
       data: taskData,
       include: {
@@ -33,25 +35,15 @@ export class TaskService {
     });
   }
 
-  async findAll(userId?: number): Promise<Task[]> {
-    const where = userId ? { userId } : {};
+  async findAll(): Promise<Task[]> {
     
-    return this.prisma.task.findMany({
-      where,
-      include: {
-        user: {
-          select: {
-            id: true,
-            username: true,
-            firstName: true,
-            lastName: true,
-          },
-        },
-      },
+    const data = this.prisma.task.findMany({
       orderBy: {
         createdAt: 'desc',
       },
     });
+    console.log('data', data);
+    return data;
   }
 
   async findOne(id: number, userId?: number): Promise<Task> {

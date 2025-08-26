@@ -86,11 +86,14 @@ export class TaskGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('createTask')
   async create(@MessageBody() createTaskDto: CreateTaskDto, @ConnectedSocket() client: Socket) {
     try {
+      
+      console.log('createTaskDto' ,createTaskDto)
       const clientInfo = this.connectedClients.get(client.id);
       if (!clientInfo) {
         client.emit('error', { message: 'Client not authenticated' });
         return;
       }
+
 
       const userId = clientInfo.userId;
       const task = await this.taskService.create(createTaskDto, userId);
@@ -128,7 +131,8 @@ export class TaskGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       }
 
       const userId = clientInfo.userId;
-      const tasks = await this.taskService.findAll(userId);
+      const tasks = await this.taskService.findAll();
+      
       
       client.emit('tasksFound', {
         tasks,

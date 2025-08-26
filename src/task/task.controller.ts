@@ -29,7 +29,7 @@ export class TaskController {
     // Example of using user data from JWT
     const userId = req.user.id;
     console.log('Finding tasks for user:', userId);
-    return this.taskService.findAll(userId);
+    return this.taskService.findAll();
   }
 
   @Get(':id')

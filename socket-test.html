@@ -181,7 +181,7 @@
                 options.query = { userId };
             }
             
-            socket = io('http://localhost:7777', options);
+            socket = io('http://localhost:7777/tasks', options);
             
             socket.on('connect', () => {
                 log('Connected to server');
